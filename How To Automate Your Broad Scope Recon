@@ -1,0 +1,308 @@
+How To Automate Your Broad Scope Recon
+Objective: To provide a comprehensive, automated reconnaissance methodology for web application hacking that combines Python and Bash scripts. By the end, you will have a script where entering a domain will automatically perform all the necessary reconnaissance.
+
+Introduction
+In web application security testing, reconnaissance is a critical phase where you gather information about the target. Automating this process ensures efficiency and thoroughness. This guide provides scripts and instructions to automate recon tasks using Python and Bash.
+
+Prerequisites
+Operating System: Linux based OS(e.g. Kali, Parrot OS)
+Tools & Libraries:
+nmap
+Sublist3r
+assetfinder
+amass
+subfinder
+httprobe
+gowitness or aquatone
+dirsearch
+ffuf
+nikto
+nuclei
+getJS
+waybackurls
+gau
+subjack
+Wordlists: From SecLists or similar
+Python: Version 3.x
+Permissions: Ensure scripts have execute permissions (chmod +x script.sh)
+Methodology Overview
+Subdomain Enumeration: Find all subdomains associated with the target domain.
+Port Scanning: Identify open ports on discovered subdomains.
+HTTP Probing and Screenshotting: Check for HTTP services and capture screenshots.
+Directory and File Bruteforcing: Discover hidden directories and files.
+Vulnerability Scanning: Scan for known vulnerabilities.
+Collecting and Analyzing JavaScript Files: Extract useful information from JS files.
+API and Endpoint Discovery: Find hidden APIs and endpoints.
+Subdomain Takeover Check: Identify unclaimed subdomains.
+Step-by-Step Guide
+Subdomain Enumeration
+Objective: Discover all subdomains of the target domain. Script: subdomain_enum.sh
+
+#!/bin/bash
+domain=$1
+if [ -z "$domain" ]; then
+    echo "Usage: ./subdomain_enum.sh <domain>"
+    exit 1
+fi
+echo "[*] Enumerating subdomains for $domain..."
+# Create directories
+mkdir -p recon/$domain
+cd recon/$domain || exit
+# Sublist3r
+echo "[*] Running Sublist3r..."
+sublist3r -d $domain -o sublist3r.txt
+# Assetfinder
+echo "[*] Running Assetfinder..."
+assetfinder --subs-only $domain > assetfinder.txt
+# Amass
+echo "[*] Running Amass..."
+amass enum -passive -d $domain -o amass.txt
+# Subfinder
+echo "[*] Running Subfinder..."
+subfinder -d $domain -o subfinder.txt
+# Combine results
+cat *.txt | sort -u > all_subdomains.txt
+echo "[*] Found $(wc -l all_subdomains.txt | awk '{print $1}') unique subdomains."
+Instructions:
+
+Save the script as subdomain_enum.sh
+Make it executable: chmod +x subdomain_enum.sh
+Run the script: ./subdomain_enum.sh target.com
+Port Scanning
+Objective: Scan discovered subdomains for open ports. Script: port_scan.sh
+
+#!/bin/bash
+domain=$1
+if [ -z "$domain" ]; then
+    echo "Usage: ./port_scan.sh <domain>"
+    exit 1
+fi
+echo "[*] Starting port scan for $domain..."
+cd recon/$domain || exit
+# Scan common web ports
+nmap -iL all_subdomains.txt -p 80,443,8080,8443 -T4 -oA nmap_scan
+echo "[*] Port scanning completed.
+Instructions:
+
+Save the script as port_scan.sh.
+Make it executable: chmod +x port_scan.sh.
+Run the script: ./port_scan.sh target.com.
+HTTP Probing & Screenshotting
+Objective: Identify live HTTP services and capture screenshots. Script: http_prob.sh
+
+ #!/bin/bash
+domain=$1
+if [ -z "$domain" ]; then
+    echo "Usage: ./http_probe.sh <domain>"
+    exit 1
+fi
+echo "[*] Probing for live HTTP servers..."
+cd recon/$domain || exit
+cat all_subdomains.txt | httprobe > live_subdomains.txt
+echo "[*] Found $(wc -l live_subdomains.txt | awk '{print $1}') live subdomains."
+# Screenshotting
+echo "[*] Taking screenshots with gowitness..."
+gowitness file -s live_subdomains.txt -d screenshots
+echo "[*] Screenshots saved in recon/$domain/screenshots"
+Instructions:
+
+Save the script as: http_probe.sh.
+Make it executable: chmod +x http_probe.sh.
+Run the script: ./http_probe.sh target.com.
+Directory and File Bruteforcing
+Objective: Discover hidden directories and files on live subdomains. Script: dir_bruteforce.sh
+
+#!/bin/bash
+domain=$1
+wordlist="/path/to/wordlist.txt"
+if [ -z "$domain" ]; then
+    echo "Usage: ./dir_bruteforce.sh <domain>"
+    exit 1
+fi
+if [ ! -f "$wordlist" ]; then
+    echo "Wordlist not found at $wordlist"
+    exit 1
+fi
+echo "[*] Starting directory bruteforce for $domain..."
+cd recon/$domain || exit
+mkdir -p dirsearch_results
+while read -r url; do
+    echo "[*] Scanning $url"
+    dirsearch -u "$url" -w "$wordlist" -e php,html,js,txt -t 50 --plain-text-report="dirsearch_results/$(echo $url | sed 's/[:/]/_/g').txt"
+done < live_subdomains.txt
+echo "[*] Directory bruteforcing completed."
+Instructions
+
+Update the wordlist variable with the correct path to your wordlist.
+Save the script as dir_bruteforce.sh.
+Make it executable: chmod +x dir_bruteforce.sh.
+Run the script: ./dir_bruteforce.sh target.com.
+Vulnerability Scanning
+Objective: Scan live subdomains for known vulnerabilities. Script: vuln_scan.sh
+
+#!/bin/bash
+domain=$1
+nuclei_templates="/path/to/nuclei-templates/"
+if [ -z "$domain" ]; then
+    echo "Usage: ./vuln_scan.sh <domain>"
+    exit 1
+fi
+if [ ! -d "$nuclei_templates" ]; then
+    echo "Nuclei templates not found at $nuclei_templates"
+    exit 1
+fi
+echo "[*] Starting vulnerability scanning for $domain..."
+cd recon/$domain || exit
+nuclei -l live_subdomains.txt -t "$nuclei_templates" -o nuclei_results.txt
+echo "[*] Vulnerability scanning completed."
+Instructions:
+
+Update the nuclei_templates variable with the path to your Nuclei templates.
+Save the script as vuln_scan.sh.
+Make it executable: chmod +x vuln_scan.sh.
+Run the script: ./vuln_scan.sh example.com.
+Collecting and Analyzing JavaScript Files
+Objective: Collect JS files and analyze them for sensitive information. Script: js_collection.sh
+
+#!/bin/bash
+domain=$1
+if [ -z "$domain" ]; then
+    echo "Usage: ./js_collection.sh <domain>"
+    exit 1
+fi
+echo "[*] Collecting JavaScript files for $domain..."
+cd recon/$domain || exit
+mkdir -p javascript_files
+while read -r url; do
+    getJS --url "$url" >> javascript_files/js_files.txt
+done < live_subdomains.txt
+echo "[*] Downloading JavaScript files..."
+cd javascript_files || exit
+wget -q -i js_files.txt
+echo "[*] JavaScript files collected."
+Pyhton script: js_analyzer.py
+
+#!/usr/bin/env python3
+import re
+import glob
+def find_secrets(file_content):
+    patterns = {
+        'API Key': r'(?i)(api_key|apiKey|apikey)['"]?s*[:=]s*['"]?([a-zA-Z0-9-]{20,})['"]?',
+        'AWS Access Key': r'AKIA[0-9A-Z]{16}',
+        # Add more patterns as needed
+    }
+    secrets = {}
+    for name, pattern in patterns.items():
+        matches = re.findall(pattern, file_content)
+        if matches:
+            secrets[name] = matches
+    return secrets
+def main():
+    js_files = glob.glob('*.js')
+    for js_file in js_files:
+        with open(js_file, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+            secrets = find_secrets(content)
+            if secrets:
+                print(f'[*] Potential secrets found in {js_file}:')
+                for key, values in secrets.items():
+                    for value in values:
+                        print(f'    {key}: {value}')
+if __name__ == '__main__':
+    main()
+Instructions:
+
+Save the Bash script as js_collection.sh and make it executable.
+Save the Python script as js_analyzer.py inside the javascript_files directory.
+Run the Bash script: ``./js_collection.sh target.com`.
+Navigate to the javascript_files directory and run the Python script: python3 js_analyzer.py.
+API & Endpoint Discovery
+Objective: Discover hidden APIs and endpoints using archived data.
+
+Script: endpoint_discovery.sh
+
+#!/bin/bash
+domain=$1
+if [ -z "$domain" ]; then
+    echo "Usage: ./endpoint_discovery.sh <domain>"
+    exit 1
+fi
+echo "[*] Collecting endpoints for $domain..."
+cd recon/$domain || exit
+cat all_subdomains.txt | waybackurls > waybackurls.txt
+cat all_subdomains.txt | gau >> waybackurls.txt
+sort -u waybackurls.txt -o waybackurls.txt
+echo "[*] Extracting parameters..."
+cat waybackurls.txt | grep "=" | qsreplace -a > params.txt
+echo "[*] Endpoints and parameters saved."
+Instructions:
+
+Save the script as endpoint_discovery.sh.
+Make it executable: chmod +x endpoint_discovery.sh.
+Run the script: ./endpoint_discovery.sh target.com.
+Subdomain Takeover Check
+Objective: Identify subdomains pointing to unclaimed resources. Script: subdomain_takeover.sh
+
+#!/bin/bash
+domain=$1
+fingerprints="/path/to/fingerprints.json"
+if [ -z "$domain" ]; then
+    echo "Usage: ./subdomain_takeover.sh <domain>"
+    exit 1
+fi
+if [ ! -f "$fingerprints" ]; then
+    echo "Fingerprints file not found at $fingerprints"
+    exit 1
+fi
+echo "[*] Checking for subdomain takeover on $domain..."
+cd recon/$domain || exit
+subjack -w all_subdomains.txt -t 100 -timeout 30 -ssl -c "$fingerprints" -v -o subjack_results.txt
+echo "[*] Subdomain takeover check completed."
+Instructions:
+
+Update the fingerprints variable with the path to your fingerprints file.
+Save the script as subdomain_takeover.sh.
+Make it executable: chmod +x subdomain_takeover.sh.
+Run the script: ./subdomain_takeover.sh target.com.
+Automation Script
+Script: auto_recon.sh
+
+#!/bin/bash
+domain=$1
+if [ -z "$domain" ]; then
+    echo "Usage: ./auto_recon.sh <domain>"
+    exit 1
+fi
+echo "[*] Starting automated reconnaissance on $domain"
+# Ensure all scripts are executable
+chmod +x subdomain_enum.sh port_scan.sh http_probe.sh dir_bruteforce.sh vuln_scan.sh js_collection.sh endpoint_discovery.sh subdomain_takeover.sh
+# Step 1: Subdomain Enumeration
+./subdomain_enum.sh $domain
+# Step 2: Port Scanning
+./port_scan.sh $domain
+# Step 3: HTTP Probing and Screenshotting
+./http_probe.sh $domain
+# Step 4: Directory and File Bruteforcing
+./dir_bruteforce.sh $domain
+# Step 5: Vulnerability Scanning
+./vuln_scan.sh $domain
+# Step 6: Collecting and Analyzing JavaScript Files
+./js_collection.sh $domain
+cd recon/$domain/javascript_files || exit
+python3 ../../../js_analyzer.py
+cd ../../../
+# Step 7: API and Endpoint Discovery
+./endpoint_discovery.sh $domain
+# Step 8: Subdomain Takeover Check
+./subdomain_takeover.sh $domain
+echo "[*] Automated reconnaissance completed for $domain"
+Instructions:
+
+Save this script as auto_recon.sh.
+Make it executable: chmod +x auto_recon.sh.
+Place all the scripts in the same directory.
+Run the automation script: ./auto_recon.sh target.com.
+Conclusion
+You now have a comprehensive, automated reconnaissance tool that performs all the essential steps in web application hacking. By entering a domain, the scripts will: * Enumerate subdomains * Scan for open ports * Probe for live HTTP services and take screenshots * Bruteforce directories and files * Scan for vulnerabilities * Collect and analyze JavaScript files * Discover APIs and endpoints * Check for subdomain takeovers
+
+This automation ensures a thorough recon process, saving time and reducing the chances of missing critical information.
