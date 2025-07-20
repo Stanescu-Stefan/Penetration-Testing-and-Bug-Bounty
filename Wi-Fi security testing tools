@@ -1,0 +1,36 @@
+A list of some popular Wi-Fi security testing tools
+
+
+A list of some popular Wi-Fi security testing tools:
+
+Aircrack-ng: Aircrack-ng is a suite of tools for auditing wireless networks. It includes tools for packet capturing, password cracking, and more.
+
+Wireshark: Wireshark is a widely-used network protocol analyzer. It can capture and analyze the data traveling back and forth on a network, including Wi-Fi networks.
+
+Kismet: Kismet is a wireless network detector, sniffer, and intrusion detection system. It can work with various Wi-Fi cards and supports a wide range of network monitoring features.
+
+Reaver: Reaver is a tool for brute-force attacking WPS (Wi-Fi Protected Setup) to recover WPA/WPA2 passphrases.
+
+Fern Wi-Fi Cracker: This is a GUI-based wireless security tool that uses various plugins to perform tasks like password cracking and network discovery.
+
+Wifite: Wifite is a Python script that automates Wi-Fi penetration testing. It can crack WEP and WPA/WPA2-PSK keys and perform other network testing tasks.
+
+Airgeddon: Airgeddon is a multi-use bash script for Linux systems that can perform various Wi-Fi network attacks, including WEP/WPA/WPA2 cracking.
+
+Fluxion: Fluxion is a Wi-Fi analysis tool that can capture WPA/WPA2 handshake information and then use it to create a fake access point, tricking clients into revealing their passwords.
+
+Hashcat: While not exclusively a Wi-Fi tool, Hashcat is a popular password cracking tool that can be used to crack Wi-Fi passwords by using the processing power of GPUs and CPUs.
+
+Bettercap: Bettercap is a network Swiss army knife that can be used for various network attacks, including Wi-Fi attacks.
+
+Bully: Bully is another tool for attacking the WPS protocol to crack WPA/WPA2 passphrases.
+
+Wash: Wash is a tool for identifying WPS-enabled access points. It's often used in combination with other tools like Reaver.
+
+Pyrit: Pyrit is a WPA precomputed cracker. It uses the power of GPUs to perform fast WPA/WPA2-PSK password cracking.
+
+WiFi-Pumpkin: WiFi-Pumpkin is a security framework for rogue Wi-Fi access points. It can be used for various attacks and man-in-the-middle scenarios.
+
+Kraken: Kraken is a cloud-based, password cracking service that can be used for Wi-Fi password cracking.
+
+Please note that the use of these tools may be subject to legal and ethical considerations. It's important to obtain proper authorization before testing the security of any network that you don't own or have explicit permission to assess. Unauthorized network testing can be illegal and unethical. Always ensure that you're complying with local laws and regulations when using these tools.
