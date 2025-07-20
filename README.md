@@ -50,4 +50,4 @@ https://snyk.io/
 
 https://book.hacktricks.wiki/en/index.html
 
-try these out on our free labs at https://labs.hackxpert.com
+try these out on these free labs at https://labs.hackxpert.com
