@@ -7,13 +7,21 @@ Penetration testing methodologies provide a structured approach to evaluating th
 Here's a breakdown of key aspects of penetration testing methodologies:
 1. Types of Penetration Testing:
 Black Box Testing: Simulates an external attacker with no prior knowledge of the target system. 
+
 White Box Testing: Assumes full knowledge of the target system, including its internal workings. 
+
 Gray Box Testing: Combines elements of both black and white box testing, with partial knowledge of the target. 
+
 External Testing: Focuses on systems accessible from the internet. 
+
 Internal Testing: Focuses on systems within the organization's network. 
+
 Targeted Testing: Involves collaboration between the pentesters and the target team, with the pentesters focusing on specific areas. 
+
 Blind Testing: Pentesters have limited or no information about the target environment. 
+
 Double-Blind Testing: Both the target team and the pentesters have limited or no knowledge of the testing activities. 
+
 2. Key Methodologies:
 OWASP (Open Web Application Security Project):
 Focuses on web application security, providing a comprehensive testing guide. 
